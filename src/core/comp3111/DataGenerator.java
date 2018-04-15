@@ -62,7 +62,6 @@ public class DataGenerator {
 		String cvsSplitBy = ",";
 		ArrayList<String[]> data = new ArrayList<String[]>();
 		String[] placeholder = {"", "a"};
-		int colCount;
 		Integer max = 0;
 		
 		data.add(placeholder); //placeholder for max number of columns
@@ -90,6 +89,7 @@ public class DataGenerator {
 			}
 			placeholder[0] = Integer.toString(max);
 		}
+		return data;
 	}
 
 }
