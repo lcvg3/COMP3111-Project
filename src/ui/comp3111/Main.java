@@ -155,6 +155,22 @@ public class Main extends Application {
 		}
 
 	}
+	/**
+	 * Initialize event handlers of create charts screen
+	 */
+	private void initCreateCharts() {
+		pieChartb.setOnAction( e -> {
+			putSceneOnStage();
+		});
+		
+		lineChartb.setOnAction( e -> {
+			putSceneOnStage();
+		});
+		
+		animatedb.setOnAction( e -> {
+			putSceneOnStage();
+		});
+	}
 	
 	/**
 	 * Initialize event handlers of the main screen
