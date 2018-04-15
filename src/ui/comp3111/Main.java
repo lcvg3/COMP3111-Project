@@ -1,10 +1,14 @@
 package ui.comp3111;
 
+import java.util.ArrayList;
+
 import core.comp3111.DataColumn;
 import core.comp3111.DataTable;
 import core.comp3111.DataType;
 import core.comp3111.SampleDataGenerator;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
@@ -12,6 +16,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -22,7 +27,7 @@ import javafx.stage.Stage;
 /**
  * The Main class of this GUI application
  * 
- * @author cspeter
+ * @author TEAM
  *
  */
 public class Main extends Application {
@@ -35,19 +40,24 @@ public class Main extends Application {
 	private DataTable sampleDataTable = null;
 
 	// Attributes: Scene and Stage
-	private static final int SCENE_NUM = 2;
+	private static final int SCENE_NUM = 6;
 	private static final int SCENE_MAIN_SCREEN = 0;
 	private static final int SCENE_LINE_CHART = 1;
+	private static final int SCENE_IMPORT_ENV = 3;
+	private static final int SCENE_IMPORT_DATA = 4;
+	private static final int SCENE_CREATE_CH = 5;
 	private static final String[] SCENE_TITLES = { "COMP3111 Chart - [Team Name]", "Sample Line Chart Screen" };
 	private Stage stage = null;
 	private Scene[] scenes = null;
+	//private ArrayList<String> dataSets = new ArrayList<String>; //datapaths to data
+	//private ArrayList<charts> charts = new ArrayList<charts>; //all charts for an environment
 
 	// To keep this application more structural,
 	// The following UI components are used to keep references after invoking
 	// createScene()
 
 	// Screen 1: paneMainScreen
-	private Button btSampleLineChartData, btSampleLineChartDataV2, btSampleLineChart;
+	private Button btImportEnv, btImportDataset, btSampleLineChart, btCreateCharts;
 	private Label lbSampleDataTable, lbMainScreenTitle;
 
 	// Screen 2: paneSampleLineChartScreen
@@ -56,6 +66,9 @@ public class Main extends Application {
 	private NumberAxis yAxis = null;
 	private Button btLineChartBackMain = null;
 
+	// Screen 3: createCharts
+	private Button pieChartb, lineChartb, animatedb;
+	private Label chartTypes;
 	/**
 	 * create all scenes in this application
 	 */
@@ -63,6 +76,9 @@ public class Main extends Application {
 		scenes = new Scene[SCENE_NUM];
 		scenes[SCENE_MAIN_SCREEN] = new Scene(paneMainScreen(), 400, 500);
 		scenes[SCENE_LINE_CHART] = new Scene(paneLineChartScreen(), 800, 600);
+		scenes[SCENE_IMPORT_ENV] = new Scene(paneImportEnvironment(), 400, 500);
+		scenes[SCENE_IMPORT_DATA] = new Scene(paneImportDataset(), 400, 500);
+		scenes[SCENE_CREATE_CH] = new Scene(paneCreateChart(), 400, 500);
 		for (Scene s : scenes) {
 			if (s != null)
 				// Assumption: all scenes share the same stylesheet
@@ -134,33 +150,35 @@ public class Main extends Application {
 		}
 
 	}
-
+	
 	/**
 	 * Initialize event handlers of the main screen
 	 */
 	private void initMainScreenHandlers() {
 
 		// click handler
-		btSampleLineChartData.setOnAction(e -> {
+		btImportDataset.setOnAction(e -> {
+			putSceneOnStage(SCENE_IMPORT_DATA);
 
 			// In this example, we invoke SampleDataGenerator to generate sample data
 			sampleDataTable = SampleDataGenerator.generateSampleLineData();
 			lbSampleDataTable.setText(String.format("SampleDataTable: %d rows, %d columns", sampleDataTable.getNumRow(),
 					sampleDataTable.getNumCol()));
 
-			populateSampleDataTableValuesToChart("Sample 1");
+			populateSampleDataTableValuesToChart("Import Environment");
 
 		});
 
 		// click handler
-		btSampleLineChartDataV2.setOnAction(e -> {
+		btImportEnv.setOnAction(e -> {
+			putSceneOnStage(SCENE_IMPORT_ENV);
 
 			// In this example, we invoke SampleDataGenerator to generate sample data
 			sampleDataTable = SampleDataGenerator.generateSampleLineDataV2();
 			lbSampleDataTable.setText(String.format("SampleDataTable: %d rows, %d columns", sampleDataTable.getNumRow(),
 					sampleDataTable.getNumCol()));
 
-			populateSampleDataTableValuesToChart("Sample 2");
+			populateSampleDataTableValuesToChart("Import Dataset");
 
 		});
 
@@ -168,6 +186,7 @@ public class Main extends Application {
 		btSampleLineChart.setOnAction(e -> {
 			putSceneOnStage(SCENE_LINE_CHART);
 		});
+		
 
 	}
 
@@ -210,16 +229,18 @@ public class Main extends Application {
 	private Pane paneMainScreen() {
 
 		lbMainScreenTitle = new Label("COMP3111 Chart");
-		btSampleLineChartData = new Button("Sample 1");
-		btSampleLineChartDataV2 = new Button("Sample 2");
+		btImportEnv = new Button("Import Environment");
+		btImportDataset = new Button("Import Dataset");
+	    btCreateCharts = new Button("Create a Chart");
 		btSampleLineChart = new Button("Sample Line Chart");
 		lbSampleDataTable = new Label("DataTable: empty");
+
 
 		// Layout the UI components
 
 		HBox hc = new HBox(20);
 		hc.setAlignment(Pos.CENTER);
-		hc.getChildren().addAll(btSampleLineChartData, btSampleLineChartDataV2);
+		hc.getChildren().addAll(btImportEnv, btImportDataset, btCreateCharts);
 
 		VBox container = new VBox(20);
 		container.getChildren().addAll(lbMainScreenTitle, hc, lbSampleDataTable, new Separator(), btSampleLineChart);
@@ -233,6 +254,26 @@ public class Main extends Application {
 		lbMainScreenTitle.getStyleClass().add("menu-title");
 		pane.getStyleClass().add("screen-background");
 
+		return pane;
+	}
+	
+	private Pane paneImportDataset() { //new window to import dataset
+		BorderPane pane = new BorderPane();
+		return pane;
+	}
+	
+	private Pane paneImportEnvironment() { //new window to import environment
+		BorderPane pane = new BorderPane();
+		return pane;
+	}
+	
+	private Pane paneCreateChart() {
+		BorderPane pane = new BorderPane();
+		chartTypes = new Label("Create a Chart");
+		lineChartb = new Button("Line Chart");
+		pieChartb = new Button("Pie Chart");
+		animatedb = new Button("Animated Chart");
+		
 		return pane;
 	}
 
