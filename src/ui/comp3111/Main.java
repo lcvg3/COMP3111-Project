@@ -59,6 +59,11 @@ public class Main extends Application {
 	// Screen 1: paneMainScreen
 	private Button btImportEnv, btImportDataset, btSampleLineChart, btCreateCharts;
 	private Label lbSampleDataTable, lbMainScreenTitle;
+	private ListView<String> dList = new ListView<String>();
+	private ObservableList<String> datas = FXCollections.observableArrayList("","","");
+	private ListView<String> cList = new ListView<String>();
+	private ObservableList<String> charts = FXCollections.observableArrayList("","","");
+	private ArrayList<String> datasets = new ArrayList<String>();
 
 	// Screen 2: paneSampleLineChartScreen
 	private LineChart<Number, Number> lineChart = null;
@@ -187,6 +192,10 @@ public class Main extends Application {
 			putSceneOnStage(SCENE_LINE_CHART);
 		});
 		
+		btCreateCharts.setOnAction(e -> {
+			putSceneOnStage(SCENE_CREATE_CH);
+		});
+		
 
 	}
 
@@ -234,7 +243,13 @@ public class Main extends Application {
 	    btCreateCharts = new Button("Create a Chart");
 		btSampleLineChart = new Button("Sample Line Chart");
 		lbSampleDataTable = new Label("DataTable: empty");
-
+		
+		dList.setItems(datas);
+		cList.setItems(charts);
+		dList.prefWidth(150);
+		cList.prefWidth(150);
+		dList.prefHeight(200);
+		dList.prefHeight(200);
 
 		// Layout the UI components
 
@@ -243,7 +258,7 @@ public class Main extends Application {
 		hc.getChildren().addAll(btImportEnv, btImportDataset, btCreateCharts);
 
 		VBox container = new VBox(20);
-		container.getChildren().addAll(lbMainScreenTitle, hc, lbSampleDataTable, new Separator(), btSampleLineChart);
+		container.getChildren().addAll(lbMainScreenTitle, hc, lbSampleDataTable, new Separator(), btSampleLineChart, dList, cList);
 		container.setAlignment(Pos.CENTER);
 
 		BorderPane pane = new BorderPane();
