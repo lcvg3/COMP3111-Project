@@ -20,7 +20,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -41,12 +43,15 @@ public class Main extends Application {
 	// java.util.ArrayList)
 
 	// Attributes: Scene and Stage
-	private static final int SCENE_NUM = 6;
+	private static final int SCENE_NUM = 10;
 	private static final int SCENE_MAIN_SCREEN = 0;
 	private static final int SCENE_LINE_CHART = 1;
-	private static final int SCENE_IMPORT_ENV = 3;
-	private static final int SCENE_IMPORT_DATA = 4;
-	private static final int SCENE_CREATE_CH = 5;
+	private static final int SCENE_IMPORT_ENV = 2;
+	private static final int SCENE_IMPORT_DATA = 3;
+	private static final int SCENE_CREATE_CH = 4;
+	private static final int SCENE_LINE = 5;
+	private static final int SCENE_PIE = 6;
+	private static final int SCENE_ANIMATED = 7;
 	private static final String[] SCENE_TITLES = { "COMP3111 Chart - [Team Name]", "Sample Line Chart Screen" };
 	private Stage stage = null;
 	private Scene[] scenes = null;
@@ -58,14 +63,14 @@ public class Main extends Application {
 	// createScene()
 
 	// Screen 1: paneMainScreen
-	private Button btImportEnv, btImportDataset, btSampleLineChart, btCreateCharts;
+	private Button btImportEnv, btImportDataset, btSampleLineChart, btCreateCharts, submitCh;
 	private Label lbSampleDataTable, lbMainScreenTitle;
 	private ListView<String> dList = new ListView<String>();
 	private ObservableList<String> datas = FXCollections.observableArrayList("","","");
 	private ListView<String> cList = new ListView<String>();
 	private ObservableList<String> charts = FXCollections.observableArrayList("","","");
 	private ArrayList<String> datasets = new ArrayList<String>();
-	private Map<String, DataTable> dataTables = new Map<String, DataTable>;
+	private Map<String, DataTable> dataTables = new Map<String, DataTable>();
 	
 	// Screen 2: paneSampleLineChartScreen
 	private LineChart<Number, Number> lineChart = null;
@@ -117,7 +122,7 @@ public class Main extends Application {
 	/**
 	 * Populate sample data table values to the chart view
 	 */
-	private void populateDataTableValuesLine(String chosenData, String title, String x, String y, int col1, int col2) {
+	private void populateDataTableValuesLine(String chosenData, String title, String x, String y, String col1, String col2) {
 
 		// Get 2 columns
 
@@ -137,7 +142,7 @@ public class Main extends Application {
 			// defining a series
 			XYChart.Series series = new XYChart.Series();
 
-			series.setName(seriesName);
+			series.setName(title);
 
 			// populating the series with data
 			// As we have checked the type, it is safe to downcast to Number[]
@@ -165,15 +170,15 @@ public class Main extends Application {
 	 */
 	private void initCreateCharts() {
 		pieChartb.setOnAction( e -> {
-			putSceneOnStage();
+			putSceneOnStage(SCENE_PIE);
 		});
 		
 		lineChartb.setOnAction( e -> {
-			putSceneOnStage();
+			putSceneOnStage(SCENE_LINE);
 		});
 		
 		animatedb.setOnAction( e -> {
-			putSceneOnStage();
+			putSceneOnStage(SCENE_ANIMATED);
 		});
 	}
 	
@@ -186,25 +191,11 @@ public class Main extends Application {
 		btImportDataset.setOnAction(e -> {
 			putSceneOnStage(SCENE_IMPORT_DATA);
 
-			// In this example, we invoke SampleDataGenerator to generate sample data
-			sampleDataTable = SampleDataGenerator.generateSampleLineData();
-			lbSampleDataTable.setText(String.format("SampleDataTable: %d rows, %d columns", sampleDataTable.getNumRow(),
-					sampleDataTable.getNumCol()));
-
-			populateSampleDataTableValuesToChart("Import Environment");
-
 		});
 
 		// click handler
 		btImportEnv.setOnAction(e -> {
 			putSceneOnStage(SCENE_IMPORT_ENV);
-
-			// In this example, we invoke SampleDataGenerator to generate sample data
-			sampleDataTable = SampleDataGenerator.generateSampleLineDataV2();
-			lbSampleDataTable.setText(String.format("SampleDataTable: %d rows, %d columns", sampleDataTable.getNumRow(),
-					sampleDataTable.getNumCol()));
-
-			populateSampleDataTableValuesToChart("Import Dataset");
 
 		});
 
@@ -309,6 +300,21 @@ public class Main extends Application {
 		lineChartb = new Button("Line Chart");
 		pieChartb = new Button("Pie Chart");
 		animatedb = new Button("Animated Chart");
+		GridPane grid = new GridPane();
+		TextField col = new TextField();
+		TextField row = new TextField();
+		TextField title = new TextField();
+		TextField x = new TextField();
+		TextField y = new TextField();
+		col.setPromptText("Choose 2 columns");
+		row.setPromptText("Choose range of rows");
+		title.setPromptText("Chart Title");
+		x.setPromptText("Choose x axis label");
+		y.setPromptText("Choose y axis label");
+		grid.getChildren().addAll(col, row, title, x, y);
+		submitCh = new Button("Generate Chart");
+		grid.getChildren().add(submitCh);
+		pane.setCenter(grid);
 		
 		return pane;
 	}
