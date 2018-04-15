@@ -1,11 +1,13 @@
 package ui.comp3111;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import core.comp3111.DataColumn;
 import core.comp3111.DataTable;
 import core.comp3111.DataType;
 import core.comp3111.SampleDataGenerator;
+import core.comp3111.DataGenerator;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,7 +39,6 @@ public class Main extends Application {
 	// You need to extend it to handle multiple data tables
 	// Hint: Use java.util.List interface and its implementation classes (e.g.
 	// java.util.ArrayList)
-	private DataTable sampleDataTable = null;
 
 	// Attributes: Scene and Stage
 	private static final int SCENE_NUM = 6;
@@ -64,7 +65,8 @@ public class Main extends Application {
 	private ListView<String> cList = new ListView<String>();
 	private ObservableList<String> charts = FXCollections.observableArrayList("","","");
 	private ArrayList<String> datasets = new ArrayList<String>();
-
+	private Map<String, DataTable> dataTables = new Map<String, DataTable>;
+	
 	// Screen 2: paneSampleLineChartScreen
 	private LineChart<Number, Number> lineChart = null;
 	private NumberAxis xAxis = null;
@@ -115,19 +117,22 @@ public class Main extends Application {
 	/**
 	 * Populate sample data table values to the chart view
 	 */
-	private void populateSampleDataTableValuesToChart(String seriesName) {
+	private void populateDataTableValuesLine(String chosenData, String title, String x, String y, int col1, int col2) {
 
 		// Get 2 columns
-		DataColumn xCol = sampleDataTable.getCol("X");
-		DataColumn yCol = sampleDataTable.getCol("Y");
+
+		DataTable chosen = dataTables.get(chosenData);
+
+		DataColumn xCol = chosen.getCol(col1);
+		DataColumn yCol = chosen.getCol(col2);
 
 		// Ensure both columns exist and the type is number
 		if (xCol != null && yCol != null && xCol.getTypeName().equals(DataType.TYPE_NUMBER)
 				&& yCol.getTypeName().equals(DataType.TYPE_NUMBER)) {
 
-			lineChart.setTitle("Sample Line Chart");
-			xAxis.setLabel("X");
-			yAxis.setLabel("Y");
+			lineChart.setTitle(title);
+			xAxis.setLabel(x);
+			yAxis.setLabel(y);
 
 			// defining a series
 			XYChart.Series series = new XYChart.Series();
