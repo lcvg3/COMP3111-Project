@@ -116,8 +116,9 @@ public class DataTable {
 	 * @return the number of row of the data table
 	 */
 	public int getNumRow() {
-		if (dc.size() <= 0)
-			System.out.println(dc.size());
+		if (dc.size() <= 0) {
+			return dc.size();
+		}
 
 		// Pick the first entry and get its size
 		// assumption: For DataTable, all columns should have the same size
