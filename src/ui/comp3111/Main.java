@@ -14,6 +14,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
@@ -29,6 +31,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+
 
 /**
  * The Main class of this GUI application
@@ -55,10 +64,11 @@ public class Main extends Application {
 	private static final int SCENE_LINE = 6;
 	private static final int SCENE_PIE = 7;
 	private static final int SCENE_ANIMATED = 8;
-	private static final String[] SCENE_TITLES = { "COMP3111 Chart - [Team Name]", "Sample Line Chart Screen" };
+	private static final String[] SCENE_TITLES = { "COMP3111 Chart - [Team Name]", "Sample Line Chart Screen", "Import Chart Screen",
+			"Import Dataset Screen", "Choose Chart Screen", "Produce Chart Screen", "Line Chart Screen", "Pie Chart Screen", "Animated Chart Screen"};
 	private Stage stage = null;
 	private Scene[] scenes = null;
-	private static enum Chart {LINE, PIE, ANIMATED};
+	private static enum Chart {LINE, AREA, ANIMATED};
 	private static Chart enumC;
 	//private ArrayList<String> dataSets = new ArrayList<String>; //datapaths to data
 	//private ArrayList<charts> charts = new ArrayList<charts>; //all charts for an environment
@@ -79,15 +89,20 @@ public class Main extends Application {
 	
 	// Screen 2: paneSampleLineChartScreen
 	private LineChart<Number, Number> lineChart = null;
-	private PieChart pieChart = null;
+	private AreaChart<Number, Number> areaChart = null;
+	private BarChart<Number, Number> barChart = null;
 	private NumberAxis xAxis = null;
 	private NumberAxis yAxis = null;
 	private Button btLineChartBackMain = null;
-
+	private Timeline timeline;
+	
 	// Screen 3: createCharts
 	private Button pieChartb, lineChartb, animatedb;
 	private Label chartTypes;
 	private TextField colLabels, colNum, rowStart, rowEnd, title, x, y;
+	
+	//Screen Pie Charts
+	private ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 	/**
 	 * create all scenes in this application
 	 */
@@ -99,6 +114,8 @@ public class Main extends Application {
 		scenes[SCENE_IMPORT_DATA] = new Scene(paneImportDataset(), 400, 500);
 		scenes[SCENE_CREATE_CH] = new Scene(paneChooseChart(), 400, 500);
 		scenes[SCENE_INFO] = new Scene(paneInfoChart(), 400, 500);
+		scenes[SCENE_PIE] = new Scene(panePieChartScreen(), 400, 500);
+		scenes[SCENE_ANIMATED] = new Scene(paneAnimatedChartScreen(), 400, 500);
 		for (Scene s : scenes) {
 			if (s != null)
 				// Assumption: all scenes share the same stylesheet
@@ -150,8 +167,8 @@ public class Main extends Application {
 					lineChart.setTitle(title);
 					break;
 				
-				case PIE:
-					pieChart.setTitle(title);
+				case AREA:
+					areaChart.setTitle(title);
 					break;
 				
 				case ANIMATED:
@@ -172,7 +189,7 @@ public class Main extends Application {
 
 			// In DataTable structure, both length must be the same
 			int len = xValues.length;
-
+			
 			for (int i = 0; i < len; i++) {
 				series.getData().add(new XYChart.Data(xValues[i], yValues[i]));
 			}
@@ -182,23 +199,36 @@ public class Main extends Application {
 					lineChart.getData().clear();
 					lineChart.getData().add(series);
 					break;
-				case PIE: 
-					lineChart.getData().clear();
-					lineChart.getData().add(series);
+				case AREA:
+					areaChart.getData().clear();
+					areaChart.getData().add(series);
+					timeline = new Timeline();
+					timeline.getKeyFrames().add(new KeyFrame(Duration.millis(500),
+						new EventHandler<ActionEvent>() {
+							@Override public void handle(ActionEvent actionEvent) {
+							for (XYChart.Series<Number, Number> series : barChart.getData()) {
+								for (XYChart.Data<Number, Number> data : series.getData()) {
+									data.setXValue(Math.random() * 100);
+								}
+							}
+						}
+					}));
+					timeline.setCycleCount(Animation.INDEFINITE);
+					timeline.play();
 					break;
 				case ANIMATED:
-					lineChart.getData().clear();
-					lineChart.getData().add(series);
+					barChart.getData().clear();
+					barChart.getData().add(series);
+					break;
 			}
 		}
-
 	}
 	/**
 	 * Initialize event handlers of create charts screen
 	 */
 	private void initCreateCharts() {
 		pieChartb.setOnAction( e -> {
-			enumC = Chart.PIE;
+			enumC = Chart.AREA;
 			putSceneOnStage(SCENE_INFO);
 		});
 		
@@ -222,16 +252,7 @@ public class Main extends Application {
 				//missing data
 				missingData.setText("Please fill in all fields");
 			}
-			switch (enumC) {
-				case LINE: 
-					putSceneOnStage(SCENE_LINE);
-					break;
-				case PIE:
-					putSceneOnStage(SCENE_PIE);
-					break;
-				case ANIMATED:
-					putSceneOnStage(SCENE_ANIMATED);
-					break;
+			putSceneOnStage(SCENE_LINE_CHART);
 			}
 		});
 	}
@@ -271,21 +292,24 @@ public class Main extends Application {
 	 */
 	private Pane paneLineChartScreen() {
 
-		xAxis = new NumberAxis();
-		yAxis = new NumberAxis();
-		lineChart = new LineChart<Number, Number>(xAxis, yAxis);
-
 		btLineChartBackMain = new Button("Back");
-
-		xAxis.setLabel("undefined");
-		yAxis.setLabel("undefined");
-		lineChart.setTitle("undefined");
-
+		
 		// Layout the UI components
 		VBox container = new VBox(20);
-		container.getChildren().addAll(lineChart, btLineChartBackMain);
 		container.setAlignment(Pos.CENTER);
-
+		
+		switch (enumC) {
+			case LINE:
+				container.getChildren().addAll(lineChart, btLineChartBackMain);
+				break;
+			case AREA:
+				container.getChildren().addAll(areaChart, btLineChartBackMain);
+				break;
+			case ANIMATED:
+				container.getChildren().addAll(barChart, btLineChartBackMain);
+				break;
+		}
+		
 		BorderPane pane = new BorderPane();
 		pane.setCenter(container);
 
@@ -294,35 +318,7 @@ public class Main extends Application {
 
 		return pane;
 	}
-
-	private Pane panePieChartScreen() {
-		xAxis = new NumberAxis();
-		yAxis = new NumberAxis();
-		pieChart = new PieChart();
-		
-		btLineChartBackMain = new Button("Back");
-		
-		xAxis.setLabel("undefined");
-		yAxis.setLabel("undefined");
-		pieChart.setTitle("undefined");
-		
-		VBox container = new VBox(20);
-		container.getChildren().addAll(pieChart, btLineChartBackMain);
-		container.setAlignment(Pos.CENTER);
-		
-		BorderPane pane = new BorderPane();
-		pane.setCenter(container);
-		
-		pane.getStyleClass().add("screen-background");
-		
-		return pane;
-		
-	}
 	
-	private Pane paneAnimatedChartScreen() {
-		return panePieChartScreen();
-		
-	}
 	/**
 	 * Creates the main screen and layout its UI components
 	 * 
@@ -336,6 +332,10 @@ public class Main extends Application {
 	    btCreateCharts = new Button("Create a Chart");
 		btSampleLineChart = new Button("Sample Line Chart");
 		lbSampleDataTable = new Label("DataTable: empty");
+		lineChart = new LineChart<Number, Number>(xAxis, yAxis);
+		areaChart = new AreaChart<Number, Number>(xAxis, yAxis);
+		barChart = new BarChart<Number, Number>(xAxis, yAxis);
+		
 		
 		dList.setItems(datas);
 		cList.setItems(charts);
@@ -381,10 +381,11 @@ public class Main extends Application {
 		lineChartb = new Button("Line Chart");
 		pieChartb = new Button("Pie Chart");
 		animatedb = new Button("Animated Chart");
-		HBox hc = new HBox(20);
+		VBox hc = new VBox(20);
 		hc.setAlignment(Pos.CENTER);
-		hc.getChildren().addAll(lineChartb, pieChartb, animatedb);
+		hc.getChildren().addAll(chartTypes, lineChartb, pieChartb, animatedb);
 		pane.setCenter(hc);
+		chartTypes.getStyleClass().add("menu-title");
 		pane.getStyleClass().add("screen-background");
 		
 		return pane;
@@ -392,7 +393,10 @@ public class Main extends Application {
 	
 	private Pane paneInfoChart() {	
 		BorderPane pane = new BorderPane();
-		GridPane grid = new GridPane();
+		VBox grid = new VBox();
+		VBox outer = new VBox();
+		outer.setSpacing(30);
+		chartTypes = new Label("Chart Specifications");
 		colLabels = new TextField();
 		colNum = new TextField();
 		rowStart = new TextField();
@@ -409,8 +413,11 @@ public class Main extends Application {
 		y.setPromptText("Choose y axis label");
 		grid.getChildren().addAll(title, colLabels, colNum, rowStart, rowEnd, x, y);
 		submitCh = new Button("Generate Chart");
-		grid.getChildren().add(submitCh);
-		pane.setBottom(grid);
+		grid.setAlignment(Pos.CENTER);
+		outer.getChildren().addAll(chartTypes, grid, submitCh);
+		outer.setAlignment(Pos.CENTER);
+		pane.setCenter(outer);
+		chartTypes.getStyleClass().add("menu-title");
 		
 		return pane;
 	}
